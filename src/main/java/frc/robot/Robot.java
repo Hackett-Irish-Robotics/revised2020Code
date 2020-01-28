@@ -48,14 +48,19 @@ public class Robot extends TimedRobot {
    @Override
   public void robotInit() {
 
-    stick = new Joystick(0);
+    stick = new Joystick(RobotMap.joystickDrive);
 
     frontLeft = new Victor(RobotMap.leftFrontMotor);
+    //frontLeft.setInverted(true);
     frontRight = new Victor(RobotMap.rightFrontMotor);
+    //frontRight.setInverted(true);
     backLeft = new Victor(RobotMap.leftBackMotor);
+    //backLeft.setInverted(true);
     backRight = new Victor(RobotMap.rightBackMotor);
+    //backRight.setInverted(true);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
+    //robotDrive.setMaxOutput(.25);
 
     CameraServer.getInstance().startAutomaticCapture();
 
@@ -146,7 +151,8 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
 
-    robotDrive.driveCartesian(stick.getY(), stick.getX(), stick.getZ());
+    //adding in a multiplier of .5 and -.5 to slow down (and invert)
+    robotDrive.driveCartesian(-.5*stick.getY(), .5*stick.getX(), .5*stick.getZ());
 
   }
 
