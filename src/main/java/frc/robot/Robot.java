@@ -39,7 +39,7 @@ public class Robot extends TimedRobot {
     Joystick stick;
     
   
-    Victor frontLeft, frontRight, backLeft, backRight;
+    Victor frontLeft, frontRight, backLeft, backRight, intake;
 
 /**
    * This function is run when the robot is first started up and should be
@@ -58,6 +58,7 @@ public class Robot extends TimedRobot {
     //backLeft.setInverted(true);
     backRight = new Victor(RobotMap.rightBackMotor);
     //backRight.setInverted(true);
+    intake = new Victor(RobotMap.intakeMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     //robotDrive.setMaxOutput(.25);
@@ -154,9 +155,15 @@ public class Robot extends TimedRobot {
     //adding in a multiplier of .5 and -.5 to slow down (and invert)
     double speedAdj = .5;
     robotDrive.driveCartesian(-speedAdj*stick.getY(), speedAdj*stick.getX(), speedAdj*stick.getZ());
-
+    if(stick.getTriggerPressed())
+    {
+      intake.setSpeed(1);
+    }
+    else
+    {
+      intake.setSpeed(0);
+    }
   }
-
   /**
    * This function is called periodically during test mode.
    */
