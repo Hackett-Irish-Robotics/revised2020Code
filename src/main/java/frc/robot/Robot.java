@@ -152,7 +152,8 @@ public class Robot extends TimedRobot {
     Scheduler.getInstance().run();
 
     //adding in a multiplier of .5 and -.5 to slow down (and invert)
-    robotDrive.driveCartesian(-.5*stick.getY(), .5*stick.getX(), .5*stick.getZ());
+    double speedAdj = .5;
+    robotDrive.driveCartesian(-speedAdj*stick.getY(), speedAdj*stick.getX(), speedAdj*stick.getZ());
 
   }
 
