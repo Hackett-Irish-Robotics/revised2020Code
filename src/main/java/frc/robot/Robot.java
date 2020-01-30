@@ -42,6 +42,7 @@ public class Robot extends TimedRobot {
   
     Victor frontLeft, frontRight, backLeft, backRight;
     Victor intake;
+    Victor shooter;
 
 /**
    * This function is run when the robot is first started up and should be
@@ -58,7 +59,7 @@ public class Robot extends TimedRobot {
     backRight = new Victor(RobotMap.rightBackMotor);
 
     intake = new Victor(RobotMap.intakeMotor);
-
+    //shooter = new Victor(RobotMap.shooterMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     //robotDrive.setMaxOutput(.25);
@@ -159,8 +160,10 @@ public class Robot extends TimedRobot {
     Scheduler.getInstance().run();
 
     //adding in a multiplier of .5 and -.5 to slow down (and invert)
-    double speedAdj = .5;
+    double speedAdj = 0.5;
     robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -speedAdj*stick.getZ());
+
+    // Joystick trigger controls the intake
     if (stick.getTrigger())
     {
       intake.setSpeed(1);
@@ -168,6 +171,16 @@ public class Robot extends TimedRobot {
     else
     {
       intake.setSpeed(0);
+    }
+
+    // Joystick side thumb button controls the shooter
+    if (stick.getRawButton(2))
+    {
+      System.out.println("shooter button pressed");
+    }
+    else 
+    {
+
     }
 
   }

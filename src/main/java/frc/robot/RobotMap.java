@@ -36,6 +36,7 @@ public class RobotMap {
     public static final int rightBackMotor = 4;
 
     public static final int intakeMotor = 5;
+    public static final int shooterMotor = 6;
 
     public static final int joystickDrive = 0;
 
