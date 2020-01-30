@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -112,6 +113,12 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_chooser.getSelected();
 
+    robotDrive.setSafetyEnabled(false);
+
+    robotDrive.driveCartesian(0, 0.25, 0);
+    Timer.delay(1);
+    robotDrive.driveCartesian(0, 0, 0);
+
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
      * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -154,7 +161,7 @@ public class Robot extends TimedRobot {
     //adding in a multiplier of .5 and -.5 to slow down (and invert)
     double speedAdj = .5;
     robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -speedAdj*stick.getZ());
-    if (stick.getTriggerPressed())
+    if (stick.getTrigger())
     {
       intake.setSpeed(1);
     }
