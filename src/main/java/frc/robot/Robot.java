@@ -64,6 +64,7 @@ public class Robot extends TimedRobot {
     //shooter = new Victor(RobotMap.shooterMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
+    //robotDrive.setMaxOutput(.25);
 
     CameraServer.getInstance().startAutomaticCapture();
 
@@ -112,6 +113,9 @@ public class Robot extends TimedRobot {
    * to the switch structure below with additional strings & commands.
    */
 
+  public void setMove(double forward, double right, double twistRight) {
+    robotDrive.driveCartesian(right, -forward, twistRight);
+  }
 
   @Override
   public void autonomousInit() {
@@ -120,6 +124,7 @@ public class Robot extends TimedRobot {
     robotDrive.setSafetyEnabled(false);
 
     t = new Timer();
+
     t.reset();
     t.start();
 
