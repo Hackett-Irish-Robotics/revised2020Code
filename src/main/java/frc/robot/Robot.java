@@ -41,6 +41,7 @@ public class Robot extends TimedRobot {
   
     Victor frontLeft, frontRight, backLeft, backRight, intake;
 
+    Timer t;
 /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
