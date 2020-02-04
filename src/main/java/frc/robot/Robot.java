@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -39,9 +40,12 @@ public class Robot extends TimedRobot {
     Joystick stick;
     
   
-    Victor frontLeft, frontRight, backLeft, backRight, intake;
+    Victor frontLeft, frontRight, backLeft, backRight;
+    Victor intake;
+    Victor shooter;
 
     Timer t;
+
 /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -52,17 +56,14 @@ public class Robot extends TimedRobot {
     stick = new Joystick(RobotMap.joystickDrive);
 
     frontLeft = new Victor(RobotMap.leftFrontMotor);
-    //frontLeft.setInverted(true);
     frontRight = new Victor(RobotMap.rightFrontMotor);
-    //frontRight.setInverted(true);
     backLeft = new Victor(RobotMap.leftBackMotor);
-    //backLeft.setInverted(true);
     backRight = new Victor(RobotMap.rightBackMotor);
-    //backRight.setInverted(true);
+
     intake = new Victor(RobotMap.intakeMotor);
+    //shooter = new Victor(RobotMap.shooterMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
-    //robotDrive.setMaxOutput(.25);
 
     CameraServer.getInstance().startAutomaticCapture();
 
@@ -110,9 +111,23 @@ public class Robot extends TimedRobot {
    * chooser code above (like the commented example) or additional comparisons
    * to the switch structure below with additional strings & commands.
    */
+
+
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_chooser.getSelected();
+
+    robotDrive.setSafetyEnabled(false);
+
+    t = new Timer();
+    t.reset();
+    t.start();
+
+    /*
+    robotDrive.driveCartesian(0, -0.25, 0);
+    Timer.delay(1);
+    robotDrive.driveCartesian(0, 0, 0);
+    /*
 
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -133,6 +148,35 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     Scheduler.getInstance().run();
+
+    double cT = t.get();
+    if (cT < 1) {
+      robotDrive.driveCartesian(0, -0.25, 0);
+    }
+    else if (cT > 1 && cT < 3) {
+      robotDrive.driveCartesian(0, 0, 0);
+    }
+    else if (cT > 3 && cT < 5) {
+      robotDrive.driveCartesian(0.25, 0, 0);
+    }
+    else if (cT > 5 && cT < 6) {
+      robotDrive.driveCartesian(0, -0.25, 0);
+    }
+    else if (cT > 6 && cT < 8) {
+      robotDrive.driveCartesian(0, 0, -0.25);
+    }
+    else if (cT > 8 && cT < 8.25) {
+      robotDrive.driveCartesian(0, 0.75, 0);
+    }
+    else if (cT > 8.25 && cT < 9) {
+      robotDrive.driveCartesian(-0.25, 0, 0);
+    }
+    else if (cT > 9 && cT < 10) {
+      robotDrive.driveCartesian(0, -0.25, 0);
+    }
+    else {
+      robotDrive.driveCartesian(0, 0, 0);
+    }
   }
 
   @Override
@@ -153,18 +197,33 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
 
-    //adding in a multiplier of .5 and -.5 to slow down (and invert)
-    double speedAdj = .5;
-    robotDrive.driveCartesian(-speedAdj*stick.getY(), speedAdj*stick.getX(), speedAdj*stick.getZ());
-    if(stick.getTriggerPressed())
+    // the slider (throttle) on the joystick sets speedAdj, which allows for real time speed limiting
+    // speed cap is an extra option for a hard-coded speed limit that is applied to the throttle
+    double stickSlider = stick.getThrottle();
+    double speedCap = 1;
+    double speedAdj = speedCap * (1 - ((stickSlider + 1) / 2));
+    //System.out.println(speedAdj);
+    robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -speedAdj*stick.getZ());
+
+    // Joystick trigger controls the intake
+    if (stick.getTrigger())
     {
       intake.setSpeed(1);
+    }
+    // Joystick side thumb button reverses intake (in case ball gets stuck in intake)
+    else if (stick.getRawButton(2))
+    {
+      intake.setSpeed(-0.4);
     }
     else
     {
       intake.setSpeed(0);
     }
+
+    
+
   }
+
   /**
    * This function is called periodically during test mode.
    */
