@@ -32,7 +32,7 @@ public class Robot extends TimedRobot {
     // Input and Ouput
     public static OI m_oi;
 
-    Command m_autonomousCommand;
+    Command m_autonomousCommand, autoRightStartCommand;
     SendableChooser<Command> m_chooser = new SendableChooser<>();
 
 
@@ -72,6 +72,48 @@ public class Robot extends TimedRobot {
     m_oi = new OI();
 
     // chooser.addOption("My Auto", new MyAutoCommand());
+    autoRightStartCommand = new Command(){
+    
+      @Override
+      protected boolean isFinished() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      protected void execute() {
+        double cT = t.get();
+        if (cT < 1) {
+          robotDrive.driveCartesian(0, -0.25, 0);
+        }
+        else if (cT > 1 && cT < 3) {
+          robotDrive.driveCartesian(0, 0, 0);
+        }
+        else if (cT > 3 && cT < 5) {
+          robotDrive.driveCartesian(0.25, 0, 0);
+        }
+        else if (cT > 5 && cT < 6) {
+          robotDrive.driveCartesian(0, -0.25, 0);
+        }
+        else if (cT > 6 && cT < 8) {
+          robotDrive.driveCartesian(0, 0, -0.25);
+        }
+        else if (cT > 8 && cT < 8.25) {
+          robotDrive.driveCartesian(0, 0.75, 0);
+        }
+        else if (cT > 8.25 && cT < 9) {
+          robotDrive.driveCartesian(-0.25, 0, 0);
+        }
+        else if (cT > 9 && cT < 10) {
+          robotDrive.driveCartesian(0, -0.25, 0);
+        }
+        else {
+          robotDrive.driveCartesian(0, 0, 0);
+        }
+      }
+    };
+    m_chooser.addOption("Auto Right Start", autoRightStartCommand);
+
     SmartDashboard.putData("Auto mode", m_chooser);
   }
 
@@ -113,9 +155,35 @@ public class Robot extends TimedRobot {
    * to the switch structure below with additional strings & commands.
    */
 
+  // A shorter and easier move function to not worry about inverting (NEEDS TESTING)
   public void setMove(double forward, double right, double twistRight) {
     robotDrive.driveCartesian(right, -forward, twistRight);
   }
+
+  public enum directions {
+    Forward, Reverse, Left, Right
+  }
+
+  public void moveDir(directions dir, double speed) {
+    switch (dir) {
+      case Forward:
+        setMove(0, speed, 0);
+        break;
+      case Reverse:
+      setMove(0, -speed, 0);
+        break;
+      case Left:
+      setMove(-speed, 0, 0);
+        break;
+      case Right:
+        setMove(speed, 0, 0);
+        break;
+      default:
+        break;
+    }
+  }
+  
+  
 
   @Override
   public void autonomousInit() {
@@ -208,12 +276,12 @@ public class Robot extends TimedRobot {
     double speedCap = 1;
     double speedAdj = speedCap * (1 - ((stickSlider + 1) / 2));
     //System.out.println(speedAdj);
-    robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -speedAdj*stick.getZ());
+    robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -0.69*stick.getZ());
 
     // Joystick trigger controls the intake
     if (stick.getTrigger())
     {
-      intake.setSpeed(1);
+      intake.setSpeed(0.5);
     }
     // Joystick side thumb button reverses intake (in case ball gets stuck in intake)
     else if (stick.getRawButton(2))
