@@ -37,7 +37,12 @@ public class RobotMap {
 
     public static final int intakeMotor = 5;
 
+    public static final int conveyerMotor = 6;
+    
     public static final int joystickDrive = 0;
+    public static final int xboxController = 1;
+
+
 
 
   

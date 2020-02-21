@@ -7,7 +7,12 @@
 
 package frc.robot;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoSink;
+import edu.wpi.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.cameraserver.CameraServer;
+//import edu.wpi.first.networktables.NetworkTableEntry;
+//import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -17,6 +22,7 @@ import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.RobotDrive;
 //import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -28,32 +34,43 @@ import edu.wpi.first.wpilibj.Timer;
  * project.
  */
 public class Robot extends TimedRobot {
- 
-    // Input and Ouput
-    public static OI m_oi;
 
-    Command m_autonomousCommand, autoRightStartCommand;
-    SendableChooser<Command> m_chooser = new SendableChooser<>();
+  // Input and Ouput
+  public static OI m_oi;
 
+  Command m_autonomousCommand, autoRightStartCommand, autoLeftStartCommand;
+  SendableChooser<Command> m_chooser = new SendableChooser<>();
 
-    MecanumDrive robotDrive;
-    Joystick stick;
-    
+  UsbCamera camera1;
+  UsbCamera camera2;
+
+  VideoSink server;
   
-    Victor frontLeft, frontRight, backLeft, backRight;
-    Victor intake;
-    Victor shooter;
+  MecanumDrive robotDrive;
+  Joystick stick;
+  XboxController xbox;
 
-    Timer t;
+  Victor frontLeft, frontRight, backLeft, backRight;
+  Victor intake;
+  Victor shooter;
+  Victor conveyer;
+  Timer t;
 
-/**
-   * This function is run when the robot is first started up and should be
-   * used for any initialization code.
+  /**
+   * This function is run when the robot is first started up and should be used
+   * for any initialization code.
    */
-   @Override
+  @Override
   public void robotInit() {
+    camera1 = CameraServer.getInstance().startAutomaticCapture(0);
+    camera2 = CameraServer.getInstance().startAutomaticCapture(1);
+    server = CameraServer.getInstance().getServer();
+
+    camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+    camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
 
     stick = new Joystick(RobotMap.joystickDrive);
+    xbox = new XboxController(RobotMap.xboxController);
 
     frontLeft = new Victor(RobotMap.leftFrontMotor);
     frontRight = new Victor(RobotMap.rightFrontMotor);
@@ -61,12 +78,15 @@ public class Robot extends TimedRobot {
     backRight = new Victor(RobotMap.rightBackMotor);
 
     intake = new Victor(RobotMap.intakeMotor);
+    
+    
     //shooter = new Victor(RobotMap.shooterMotor);
+    
+    
+    conveyer = new Victor(RobotMap.conveyerMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     //robotDrive.setMaxOutput(.25);
-
-    CameraServer.getInstance().startAutomaticCapture();
 
     // Instantiate our input/output.
     m_oi = new OI();
@@ -112,7 +132,50 @@ public class Robot extends TimedRobot {
         }
       }
     };
+
+    autoLeftStartCommand = new Command(){
+    
+      @Override
+      protected boolean isFinished() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      protected void execute() {
+        double cT = t.get();
+        if (cT < 1) {
+          robotDrive.driveCartesian(0, 0.25, 0);
+        }
+        else if (cT > 1 && cT < 3) {
+          robotDrive.driveCartesian(0, 0, 0);
+        }
+        else if (cT > 3 && cT < 5) {
+          robotDrive.driveCartesian(0.25, 0, 0);
+        }
+        else if (cT > 5 && cT < 6) {
+          robotDrive.driveCartesian(0, -0.25, 0);
+        }
+        else if (cT > 6 && cT < 8) {
+          robotDrive.driveCartesian(0, 0, -0.25);
+        }
+        else if (cT > 8 && cT < 8.25) {
+          robotDrive.driveCartesian(0, 0.75, 0);
+        }
+        else if (cT > 8.25 && cT < 9) {
+          robotDrive.driveCartesian(-0.25, 0, 0);
+        }
+        else if (cT > 9 && cT < 10) {
+          robotDrive.driveCartesian(0, -0.25, 0);
+        }
+        else {
+          robotDrive.driveCartesian(0, 0, 0);
+        }
+      }
+    };
+
     m_chooser.addOption("Auto Right Start", autoRightStartCommand);
+    m_chooser.addOption("Auto Left Start", autoLeftStartCommand);
 
     SmartDashboard.putData("Auto mode", m_chooser);
   }
@@ -222,6 +285,7 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     Scheduler.getInstance().run();
 
+    /*
     double cT = t.get();
     if (cT < 1) {
       robotDrive.driveCartesian(0, -0.25, 0);
@@ -250,6 +314,7 @@ public class Robot extends TimedRobot {
     else {
       robotDrive.driveCartesian(0, 0, 0);
     }
+    */
   }
 
   @Override
@@ -275,27 +340,60 @@ public class Robot extends TimedRobot {
     double stickSlider = stick.getThrottle();
     double speedCap = 1;
     double speedAdj = speedCap * (1 - ((stickSlider + 1) / 2));
-    //System.out.println(speedAdj);
-    robotDrive.driveCartesian(-speedAdj*stick.getX(), speedAdj*stick.getY(), -0.69*stick.getZ());
 
-    // Joystick trigger controls the intake
-    if (stick.getTrigger())
-    {
-      intake.setSpeed(0.5);
+    double spinCap;
+
+    // For precise movement: if trigger is pressed, spinning is blocked
+    if (stick.getTrigger()) {
+      spinCap = 0;
     }
-    // Joystick side thumb button reverses intake (in case ball gets stuck in intake)
-    else if (stick.getRawButton(2))
+    else {
+      spinCap = 0.69;
+    }
+
+    // For precise movement: if thumb button is presses, moving is blocked
+    if (stick.getRawButton(2)) {
+      speedAdj = 0;
+    }
+
+    //System.out.println(speedAdj);
+    robotDrive.driveCartesian(speedAdj*stick.getX(), -speedAdj*stick.getY(), spinCap*stick.getZ());
+
+    // Xbox controller A button runs the intake
+    if (xbox.getAButton())
     {
-      intake.setSpeed(-0.4);
+      intake.setSpeed(-0.5);
+    }
+    // Xbox controller b Button reverses intake (in case ball gets stuck in intake)
+    else if (xbox.getBButton())
+    {
+      intake.setSpeed(0.4);
     }
     else
     {
       intake.setSpeed(0);
     }
 
-    
+    // Xbox controller left stick up&down controls the Conveyer 
+    if (Math.abs(xbox.getRawAxis(1)) >= 0.05) 
+    {
+      conveyer.setSpeed(xbox.getRawAxis(1)*0.33);
+    }
+    else
+    {
+      conveyer.setSpeed(0);
+    }
+
+    if (stick.getRawButton(4)) {
+      System.out.println("Setting camera 2");
+      server.setSource(camera1);
+  } else if (stick.getRawButton(5)) {
+      System.out.println("Setting camera 1");
+      server.setSource(camera2);
+  }
 
   }
+
 
   /**
    * This function is called periodically during test mode.
