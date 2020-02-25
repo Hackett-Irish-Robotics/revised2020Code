@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -80,7 +81,7 @@ public class Robot extends TimedRobot {
     intake = new Victor(RobotMap.intakeMotor);
     
     
-    //shooter = new Victor(RobotMap.shooterMotor);
+    shooter = new Victor(RobotMap.shooterMotor);
     
     
     conveyer = new Victor(RobotMap.conveyerMotor);
@@ -383,6 +384,12 @@ public class Robot extends TimedRobot {
     {
       conveyer.setSpeed(0);
     }
+
+    // Xbox controller left bumper runs the shooter
+    if (xbox.getBumper(Hand.kLeft)) {
+      shooter.setSpeed(1);
+    }
+
 
     if (stick.getRawButton(4)) {
       System.out.println("Setting camera 2");
