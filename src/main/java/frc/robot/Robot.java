@@ -338,13 +338,13 @@ public class Robot extends TimedRobot {
 
     // the slider (throttle) on the joystick sets speedAdj, which allows for real time speed limiting
     // speed cap is an extra option for a hard-coded speed limit that is applied to the throttle
-    double stickSlider = stick.getThrottle();
+    //double stickSlider = stick.getThrottle();
     double speedCap = 1;
-    double speedAdj = speedCap * (1 - ((stickSlider + 1) / 2));
-
-    double spinCap;
+    double spinCap = .69;
+    //double speedAdj = speedCap * (1 - ((stickSlider + 1) / 2));
 
     // For precise movement: if trigger is pressed, spinning is blocked
+   /*
     if (stick.getTrigger()) {
       spinCap = 0;
     }
@@ -356,9 +356,9 @@ public class Robot extends TimedRobot {
     if (stick.getRawButton(2)) {
       speedAdj = 0;
     }
-
+*/
     //System.out.println(speedAdj);
-    robotDrive.driveCartesian(speedAdj*stick.getX(), -speedAdj*stick.getY(), spinCap*stick.getZ());
+    robotDrive.driveCartesian(speedCap*xbox.getRawAxis(0), -speedCap*xbox.getRawAxis(1), spinCap*xbox.getRawAxis(4));
 
     // Xbox controller A button runs the intake
     if (xbox.getAButton())
@@ -368,7 +368,7 @@ public class Robot extends TimedRobot {
     // Xbox controller b Button reverses intake (in case ball gets stuck in intake)
     else if (xbox.getBButton())
     {
-      intake.setSpeed(0.4);
+      intake.setSpeed(0.5);
     }
     else
     {
@@ -376,9 +376,13 @@ public class Robot extends TimedRobot {
     }
 
     // Xbox controller left stick up&down controls the Conveyer 
-    if (Math.abs(xbox.getRawAxis(1)) >= 0.05) 
+    if (xbox.getXButton()) 
     {
-      conveyer.setSpeed(xbox.getRawAxis(1)*0.33);
+      conveyer.setSpeed(-1);
+    }
+    else if (xbox.getYButton())
+    {
+      conveyer.setSpeed(1);
     }
     else
     {
@@ -387,9 +391,13 @@ public class Robot extends TimedRobot {
 
     // Xbox controller left bumper runs the shooter
     if (xbox.getBumper(Hand.kLeft)) {
-      shooter.setSpeed(1);
+      shooter.setSpeed(-1);
     }
-
+    
+    if (xbox.getBumper(Hand.kRight))
+    {
+      shooter.setSpeed(0);
+    }
 
     if (stick.getRawButton(4)) {
       System.out.println("Setting camera 2");
