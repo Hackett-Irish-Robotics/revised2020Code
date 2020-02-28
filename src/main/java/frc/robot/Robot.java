@@ -9,8 +9,11 @@ package frc.robot;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSink;
+import edu.wpi.cscore.VideoSource;
 import edu.wpi.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 //import edu.wpi.first.networktables.NetworkTableEntry;
 //import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -46,6 +49,9 @@ public class Robot extends TimedRobot {
   UsbCamera camera2;
 
   VideoSink server;
+
+  NetworkTableEntry cameraSelection;
+  CameraServer camServer;
   
   MecanumDrive robotDrive;
   Joystick stick;
@@ -65,11 +71,22 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     camera1 = CameraServer.getInstance().startAutomaticCapture(0);
     camera2 = CameraServer.getInstance().startAutomaticCapture(1);
+    //camera1 = new UsbCamera("cam1", 0);
+    //System.out.println(camera1.isEnabled());
+    //camera2 = new UsbCamera("cam2", 1);
+    camServer = CameraServer.getInstance();
     server = CameraServer.getInstance().getServer();
+    //System.out.println(camera1.isEnabled());
+    //System.out.println(camera2.isEnabled());
 
-    camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
-    camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+    //camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+    //camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
 
+    cameraSelection = NetworkTableInstance.getDefault().getTable("").getEntry("CameraSelection");
+    //VideoSource source = camera1;
+    CameraServer.getInstance().addSwitchedCamera("Camera View");
+    CameraServer.getInstance().getVideo(camera1)
+;
     stick = new Joystick(RobotMap.joystickDrive);
     xbox = new XboxController(RobotMap.xboxController);
 
@@ -191,6 +208,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    
   }
 
   /**
@@ -370,42 +388,52 @@ public class Robot extends TimedRobot {
     {
       intake.setSpeed(0.5);
     }
+    // Else the motor stops
     else
     {
       intake.setSpeed(0);
     }
 
-    // Xbox controller left stick up&down controls the Conveyer 
+    // Xbox controller X button moves conveyer up 
     if (xbox.getXButton()) 
     {
       conveyer.setSpeed(-1);
     }
+    // Xbox controller Y button moves conveyer down
     else if (xbox.getYButton())
     {
       conveyer.setSpeed(1);
     }
+    // Else the motor stops
     else
     {
       conveyer.setSpeed(0);
     }
 
-    // Xbox controller left bumper runs the shooter
+    // Xbox controller left bumper runs shooter
     if (xbox.getBumper(Hand.kLeft)) {
       shooter.setSpeed(-1);
     }
-    
-    if (xbox.getBumper(Hand.kRight))
+    // Xbox controller right bumper stops shooter
+    else if (xbox.getBumper(Hand.kRight))
     {
       shooter.setSpeed(0);
     }
 
-    if (stick.getRawButton(4)) {
-      System.out.println("Setting camera 2");
-      server.setSource(camera1);
-  } else if (stick.getRawButton(5)) {
-      System.out.println("Setting camera 1");
-      server.setSource(camera2);
-  }
+    //Xbox controller start button switches camera to camera 1
+    if (xbox.getStartButton()) {
+      
+      camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+      camera2.setConnectionStrategy(ConnectionStrategy.kForceClose);
+      
+      
+    } 
+    // Xbox controller back buttons switches camera to camera 2
+    else if (xbox.getBackButton()) {
+      camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+      camera1.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        
+    }
 
   }
 
