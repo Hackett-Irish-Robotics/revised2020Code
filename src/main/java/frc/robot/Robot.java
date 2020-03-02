@@ -12,6 +12,7 @@ import edu.wpi.cscore.VideoSink;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 //import edu.wpi.first.networktables.NetworkTableEntry;
@@ -63,6 +64,12 @@ public class Robot extends TimedRobot {
   Victor conveyer;
   Timer t;
 
+  // Limelight stuff
+  NetworkTable table;
+  NetworkTableEntry tx, ty, ta;
+  double limeX, limeY, limeArea;
+
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -97,14 +104,18 @@ public class Robot extends TimedRobot {
 
     intake = new Victor(RobotMap.intakeMotor);
     
-    
     shooter = new Victor(RobotMap.shooterMotor);
-    
     
     conveyer = new Victor(RobotMap.conveyerMotor);
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     //robotDrive.setMaxOutput(.25);
+
+    // Limelight stuff
+    table = NetworkTableInstance.getDefault().getTable("limelight");
+    tx = table.getEntry("tx");
+    ty = table.getEntry("ty");
+    ta = table.getEntry("ta");
 
     // Instantiate our input/output.
     m_oi = new OI();
@@ -208,7 +219,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    
+    // Limelight stuff
+    //read values periodically
+    limeX = tx.getDouble(0.0);
+    limeY = ty.getDouble(0.0);
+    limeArea = ta.getDouble(0.0);
+
+    //post to smart dashboard periodically
+    SmartDashboard.putNumber("LimelightX", limeX);
+    SmartDashboard.putNumber("LimelightY", limeY);
+    SmartDashboard.putNumber("LimelightArea", limeArea);
   }
 
   /**
