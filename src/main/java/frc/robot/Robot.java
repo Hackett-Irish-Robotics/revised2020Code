@@ -92,8 +92,8 @@ public class Robot extends TimedRobot {
     cameraSelection = NetworkTableInstance.getDefault().getTable("").getEntry("CameraSelection");
     //VideoSource source = camera1;
     CameraServer.getInstance().addSwitchedCamera("Camera View");
-    CameraServer.getInstance().getVideo(camera1)
-;
+    CameraServer.getInstance().getVideo(camera1);
+
     xbox1 = new XboxController(RobotMap.xboxController1);
     xbox2 = new XboxController(RobotMap.xboxController2);
 
@@ -413,6 +413,13 @@ public class Robot extends TimedRobot {
 */
     //System.out.println(speedAdj);
     robotDrive.driveCartesian(speedCap*xbox1.getRawAxis(0), -speedCap*xbox1.getRawAxis(1), spinCap*xbox1.getRawAxis(4));
+
+    // Limelight aiming test
+    if (xbox1.getAButton()) {
+      if (Math.abs(limeX) > 1) {
+        robotDrive.driveCartesian(0, 0, 0.1*(limeX/29.8));
+      }
+    }
 
     // Xbox controller A button runs the intake
     if (xbox2.getAButton())
