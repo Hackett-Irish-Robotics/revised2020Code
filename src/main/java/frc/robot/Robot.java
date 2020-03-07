@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Joystick;
+//import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.RobotDrive;
 //import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Victor;
@@ -55,8 +55,8 @@ public class Robot extends TimedRobot {
   CameraServer camServer;
   
   MecanumDrive robotDrive;
-  Joystick stick;
-  XboxController xbox;
+  XboxController xbox1;
+  XboxController xbox2;
 
   Victor frontLeft, frontRight, backLeft, backRight;
   Victor intake;
@@ -94,8 +94,8 @@ public class Robot extends TimedRobot {
     CameraServer.getInstance().addSwitchedCamera("Camera View");
     CameraServer.getInstance().getVideo(camera1)
 ;
-    stick = new Joystick(RobotMap.joystickDrive);
-    xbox = new XboxController(RobotMap.xboxController);
+    xbox1 = new XboxController(RobotMap.xboxController1);
+    xbox2 = new XboxController(RobotMap.xboxController2);
 
     frontLeft = new Victor(RobotMap.leftFrontMotor);
     frontRight = new Victor(RobotMap.rightFrontMotor);
@@ -232,7 +232,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("LimelightArea", limeArea);
 
     //Xbox controller start button switches camera to camera 1
-    if (xbox.getStartButton()) {
+    if (xbox2.getStartButton()) {
       
       camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
       camera2.setConnectionStrategy(ConnectionStrategy.kForceClose);
@@ -240,7 +240,7 @@ public class Robot extends TimedRobot {
       
     } 
     // Xbox controller back buttons switches camera to camera 2
-    else if (xbox.getBackButton()) {
+    else if (xbox2.getBackButton()) {
       camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
       camera1.setConnectionStrategy(ConnectionStrategy.kForceClose);
         
@@ -412,15 +412,15 @@ public class Robot extends TimedRobot {
     }
 */
     //System.out.println(speedAdj);
-    robotDrive.driveCartesian(speedCap*xbox.getRawAxis(0), -speedCap*xbox.getRawAxis(1), spinCap*xbox.getRawAxis(4));
+    robotDrive.driveCartesian(speedCap*xbox1.getRawAxis(0), -speedCap*xbox1.getRawAxis(1), spinCap*xbox1.getRawAxis(4));
 
     // Xbox controller A button runs the intake
-    if (xbox.getAButton())
+    if (xbox2.getAButton())
     {
       intake.setSpeed(-0.5);
     }
     // Xbox controller b Button reverses intake (in case ball gets stuck in intake)
-    else if (xbox.getBButton())
+    else if (xbox2.getBButton())
     {
       intake.setSpeed(0.5);
     }
@@ -431,12 +431,12 @@ public class Robot extends TimedRobot {
     }
 
     // Xbox controller X button moves conveyer up 
-    if (xbox.getXButton()) 
+    if (xbox2.getXButton()) 
     {
       conveyer.setSpeed(-1);
     }
     // Xbox controller Y button moves conveyer down
-    else if (xbox.getYButton())
+    else if (xbox2.getYButton())
     {
       conveyer.setSpeed(1);
     }
@@ -447,11 +447,11 @@ public class Robot extends TimedRobot {
     }
 
     // Xbox controller left bumper runs shooter
-    if (xbox.getBumper(Hand.kLeft)) {
+    if (xbox2.getBumper(Hand.kLeft)) {
       shooter.setSpeed(-1);
     }
     // Xbox controller right bumper stops shooter
-    else if (xbox.getBumper(Hand.kRight))
+    else if (xbox2.getBumper(Hand.kRight))
     {
       shooter.setSpeed(0);
     }
