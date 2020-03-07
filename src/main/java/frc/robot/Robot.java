@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
 
   // Limelight stuff
   NetworkTable table;
-  NetworkTableEntry tx, ty, ta;
+  NetworkTableEntry tx, ty, ta, tv;
   double limeX, limeY, limeArea;
 
 
@@ -116,6 +116,7 @@ public class Robot extends TimedRobot {
     tx = table.getEntry("tx");
     ty = table.getEntry("ty");
     ta = table.getEntry("ta");
+    tv = table.getEntry("tv");
 
     // Instantiate our input/output.
     m_oi = new OI();
@@ -229,6 +230,21 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("LimelightX", limeX);
     SmartDashboard.putNumber("LimelightY", limeY);
     SmartDashboard.putNumber("LimelightArea", limeArea);
+
+    //Xbox controller start button switches camera to camera 1
+    if (xbox.getStartButton()) {
+      
+      camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+      camera2.setConnectionStrategy(ConnectionStrategy.kForceClose);
+      
+      
+    } 
+    // Xbox controller back buttons switches camera to camera 2
+    else if (xbox.getBackButton()) {
+      camera2.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
+      camera1.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        
+    }
   }
 
   /**
@@ -440,7 +456,9 @@ public class Robot extends TimedRobot {
       shooter.setSpeed(0);
     }
 
+    //MOVED TO ROBOT PERIODIC SO CAMERAS CAN BE USED WHEN TELEOP DISABLED
     //Xbox controller start button switches camera to camera 1
+    /*
     if (xbox.getStartButton()) {
       
       camera1.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
@@ -454,7 +472,8 @@ public class Robot extends TimedRobot {
       camera1.setConnectionStrategy(ConnectionStrategy.kForceClose);
         
     }
-
+    */
+    
   }
 
 
