@@ -429,7 +429,13 @@ public class Robot extends TimedRobot {
     // Limelight aiming test
     if (xbox1.getBButton()) {
       if (Math.abs(limeX) > 0.1) {
-        robotDrive.driveCartesian(0, 0, ((limeX > 0) ? 0.1 : -0.1)+(limeX/44.7));
+        if (limeX > 0) {
+          robotDrive.driveCartesian(0, 0, 0.1+(limeX/44.7));
+        }
+        else {
+          robotDrive.driveCartesian(0, 0, -0.1+(limeX/44.7));
+        }
+        //robotDrive.driveCartesian(0, 0, ((limeX > 0) ? 0.1 : -0.1)+(limeX/44.7));
       }
     }
 
