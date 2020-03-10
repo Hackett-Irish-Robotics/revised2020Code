@@ -400,6 +400,8 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
 
+    robotDrive.setSafetyEnabled(false);
+
     // the slider (throttle) on the joystick sets speedAdj, which allows for real time speed limiting
     // speed cap is an extra option for a hard-coded speed limit that is applied to the throttle
     //double stickSlider = stick.getThrottle();
@@ -427,7 +429,7 @@ public class Robot extends TimedRobot {
     // Limelight aiming test
     if (xbox1.getBButton()) {
       if (Math.abs(limeX) > 0.1) {
-        robotDrive.driveCartesian(0, 0, (limeX/29.8));
+        robotDrive.driveCartesian(0, 0, ((limeX > 0) ? 0.1 : -0.1)+(limeX/44.7));
       }
     }
 
