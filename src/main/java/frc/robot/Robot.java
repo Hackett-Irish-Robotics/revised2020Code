@@ -61,7 +61,8 @@ public class Robot extends TimedRobot {
   
   Victor intake;
   
-  Victor shooter;
+  Victor shooter1;
+  Victor shooter2;
   
   Victor conveyer;
   
@@ -74,7 +75,8 @@ public class Robot extends TimedRobot {
   // Limelight stuff
   NetworkTable table;
   NetworkTableEntry tx, ty, ta, tv;
-  double limeX, limeY, limeArea;
+  double limeX, limeY, limeArea, limeHasTargetFloat;
+  Boolean limeHasTarget;
 
 
   /**
@@ -111,7 +113,8 @@ public class Robot extends TimedRobot {
 
     intake = new Victor(RobotMap.intakeMotor);
     
-    shooter = new Victor(RobotMap.shooterMotor);
+    shooter1 = new Victor(RobotMap.shooterMotor1);
+    shooter2 = new Victor(RobotMap.shooterMotor2);
     
     conveyer = new Victor(RobotMap.conveyerMotor);
 
@@ -235,11 +238,19 @@ public class Robot extends TimedRobot {
     limeX = tx.getDouble(0.0);
     limeY = ty.getDouble(0.0);
     limeArea = ta.getDouble(0.0);
+    limeHasTargetFloat = tv.getDouble(0.0);
+    if (limeHasTargetFloat == 1) {
+      limeHasTarget = true;
+    }
+    else {
+      limeHasTarget = false;
+    }
 
     //post to smart dashboard periodically
     SmartDashboard.putNumber("LimelightX", limeX);
     SmartDashboard.putNumber("LimelightY", limeY);
     SmartDashboard.putNumber("LimelightArea", limeArea);
+    SmartDashboard.putNumber("LimeHasTarget", limeHasTargetFloat);
 
     //Xbox controller start button switches camera to camera 1
     if (xbox2.getStartButton()) {
@@ -426,14 +437,40 @@ public class Robot extends TimedRobot {
     //System.out.println(speedAdj);
     robotDrive.driveCartesian(speedCap*xbox1.getRawAxis(0), -speedCap*xbox1.getRawAxis(1), spinCap*xbox1.getRawAxis(4));
 
-    // Limelight aiming test
+    // Limelight aiming testing
+    // X-value adjusting (twisting)
     if (xbox1.getBButton()) {
-      if (Math.abs(limeX) > 0.1) {
-        if (limeX > 0) {
-          robotDrive.driveCartesian(0, 0, 0.1+(limeX/44.7));
+      if (!limeHasTarget) {
+        robotDrive.driveCartesian(0, 0, 0.2);
+      }
+      else {
+        if (Math.abs(limeX) > 0.1) {
+          if (limeX > 0) {
+            robotDrive.driveCartesian(0, 0, 0.1+(limeX/44.7));
+          }
+          else {
+            robotDrive.driveCartesian(0, 0, -0.1+(limeX/44.7));
+          }
+        }
+      }   
+    }
+
+    // Area-based adjusting (distance from target)
+    // 1.893410
+    if (xbox1.getXButton()) {
+      double error = limeArea - 1.89;
+      if ((Math.abs(error) > 0.1) && limeHasTarget) {
+        if (error > 0.5) {
+          robotDrive.driveCartesian(0, -0.3, 0);
+        }
+        else if (error > 0.25 && error < 0.5) {
+          robotDrive.driveCartesian(0, -0.2, 0);
+        }
+        else if (error > 0.1 && error < 0.25) {
+          robotDrive.driveCartesian(0, -0.1, 0);
         }
         else {
-          robotDrive.driveCartesian(0, 0, -0.1+(limeX/44.7));
+          robotDrive.driveCartesian(0, 0.2, 0);
         }
         //robotDrive.driveCartesian(0, 0, ((limeX > 0) ? 0.1 : -0.1)+(limeX/44.7));
       }
@@ -473,12 +510,14 @@ public class Robot extends TimedRobot {
 
     // Xbox controller left bumper runs shooter
     if (xbox2.getBumper(Hand.kLeft)) {
-      shooter.setSpeed(1);
+      shooter1.setSpeed(1.0);
+      shooter2.setSpeed(-1.0);
     }
     // Xbox controller right bumper stops shooter
     else if (xbox2.getBumper(Hand.kRight))
     {
-      shooter.setSpeed(0);
+      shooter1.setSpeed(0);
+      shooter2.setSpeed(0);
     }
 
     if (xbox1.getYButton()) 
