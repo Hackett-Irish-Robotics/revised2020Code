@@ -15,6 +15,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 //import edu.wpi.first.networktables.NetworkTableEntry;
 //import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -48,21 +49,27 @@ public class Robot extends TimedRobot {
 
   UsbCamera camera1;
   UsbCamera camera2;
-
   VideoSink server;
-
   NetworkTableEntry cameraSelection;
   CameraServer camServer;
   
   MecanumDrive robotDrive;
+  Victor frontLeft, frontRight, backLeft, backRight;
+
   XboxController xbox1;
   XboxController xbox2;
-
-  Victor frontLeft, frontRight, backLeft, backRight;
+  
   Victor intake;
+  
   Victor shooter;
+  
   Victor conveyer;
+  
+  DoubleSolenoid climb;
+
   Timer t;
+
+
 
   // Limelight stuff
   NetworkTable table;
@@ -107,6 +114,9 @@ public class Robot extends TimedRobot {
     shooter = new Victor(RobotMap.shooterMotor);
     
     conveyer = new Victor(RobotMap.conveyerMotor);
+
+    climb = new DoubleSolenoid(0, 1);
+
 
     robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     //robotDrive.setMaxOutput(.25);
@@ -455,7 +465,7 @@ public class Robot extends TimedRobot {
 
     // Xbox controller left bumper runs shooter
     if (xbox2.getBumper(Hand.kLeft)) {
-      shooter.setSpeed(-1);
+      shooter.setSpeed(1);
     }
     // Xbox controller right bumper stops shooter
     else if (xbox2.getBumper(Hand.kRight))
@@ -463,6 +473,14 @@ public class Robot extends TimedRobot {
       shooter.setSpeed(0);
     }
 
+    if (xbox1.getYButton()) 
+    {
+      climb.set(DoubleSolenoid.Value.kForward);
+    }
+    else if (xbox1.getAButton())
+    {
+      climb.set(DoubleSolenoid.Value.kReverse);
+    }
     //MOVED TO ROBOT PERIODIC SO CAMERAS CAN BE USED WHEN TELEOP DISABLED
     //Xbox controller start button switches camera to camera 1
     /*
